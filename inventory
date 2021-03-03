@@ -1,0 +1,14 @@
+[master]
+192.168.1.31
+
+[workers]
+192.168.1.32
+192.168.1.33
+
+[all:vars]
+#ansible_connection=ssh
+#ansible_ssh_pass=123
+ansible_user=ansible
+ansible_pass=123
+ansible_become_pass=123
+ansible_root_pass=XDS

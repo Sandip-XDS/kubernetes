@@ -1,0 +1,58 @@
+---
+
+- hosts: all
+  become: true
+
+  vars_prompt:
+
+          - name: "nuser"
+            prompt: "Enter Username to be created on All Target Machines"
+            private: no
+
+
+
+
+  tasks:
+
+          - name: Updating Local Software Repositories
+            apt:
+                    update_cache: yes
+
+          - name: Creating a Ansible User on all the Machines
+            user:
+                    name: "{{ nuser }}"
+                    createhome: yes
+                    shell: /bin/bash
+                    append: yes
+                    state: present
+
+
+          - name: Creating a Sudoers File for the User
+            file:
+                    path: "/etc/sudoers.d/{{ nuser }}"
+                    state: touch
+                    mode: 0600
+
+          - name: Setting up SUDO without Password Prompt
+            lineinfile:
+                    dest: "/etc/sudoers.d/{{ nuser }}"
+                    line: "{{ nuser }} ALL=(ALL) NOPASSWD: ALL"
+                    validate: 'visudo -cf %s'
+
+          - name: Set Authorized Key for user Copying it from current {{ nuser }} user.
+            authorized_key:
+                    user: "{{ nuser }}"
+                    state: present
+                    key: "{{lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"
+
+          - name: Print the Created User
+            shell: id "{{ nuser }}"
+            register: new_user_created
+
+          - debug:
+                  msg: "{{ new_user_created.stdout_lines[0] }}"
+
+
+
+
+
